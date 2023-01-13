@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\MensajeRepository;
+use App\Utilidades\Utils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,28 +25,15 @@ class MensajeController extends AbstractController
     }
 
     #[Route('/mensaje/list', name: 'app_mensaje')]
-    public function listar(MensajeRepository $mensajeRepository): JsonResponse
+    public function listar(MensajeRepository $mensajeRepository, Utils $utils): JsonResponse
     {
         $listMensajes = $mensajeRepository->findAll();
 
-        $listJson = $this->toJson($listMensajes);
+        $listJson = $utils->toJson($listMensajes);
 
         return new JsonResponse($listJson, 200, [], true);
 
     }
 
-
-    public function toJson($data): string
-    {
-        //Inicialización de serializador
-        $encoders = [new XmlEncoder(), new JsonEncoder()];
-        $normalizers = [new ObjectNormalizer()];
-        $serializer = new Serializer($normalizers, $encoders);
-
-        //Conversion a JSON
-        $json = $serializer->serialize($data, 'json');
-
-        return $json;
-    }
 
 }

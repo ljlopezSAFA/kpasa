@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\PerfilRepository;
-use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -22,13 +21,13 @@ class Perfil
     private ?string $apellidos = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?DateTime $fechaNacimiento = null;
+    private ?\DateTimeInterface $fechaNacimiento = null;
 
     #[ORM\Column]
     private ?int $sexo = null;
 
     #[ORM\OneToOne(inversedBy: 'perfil', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn( name: 'id_usuario',nullable: false)]
+    #[ORM\JoinColumn(name: 'id_usuario',nullable: false)]
     private ?Usuario $usuario = null;
 
     public function getId(): ?int
@@ -65,7 +64,7 @@ class Perfil
         return $this->fechaNacimiento;
     }
 
-    public function setFechaNacimiento(DateTime $fechaNacimiento): self
+    public function setFechaNacimiento(\DateTimeInterface $fechaNacimiento): self
     {
         $this->fechaNacimiento = $fechaNacimiento;
 
@@ -95,4 +94,6 @@ class Perfil
 
         return $this;
     }
+
+
 }
