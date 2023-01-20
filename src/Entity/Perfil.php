@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\PerfilRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PerfilRepository::class)]
 class Perfil
@@ -12,18 +13,23 @@ class Perfil
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user_query'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
+    #[Groups(['user_query'])]
     private ?string $nombre = null;
 
     #[ORM\Column(length: 150)]
+    #[Groups(['user_query'])]
     private ?string $apellidos = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['user_query'])]
     private ?\DateTimeInterface $fechaNacimiento = null;
 
     #[ORM\Column]
+    #[Groups(['user_query'])]
     private ?int $sexo = null;
 
     #[ORM\OneToOne(inversedBy: 'perfil', cascade: ['persist', 'remove'])]

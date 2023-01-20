@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\ApiKey;
+use App\Entity\Rol;
 use App\Entity\Usuario;
 use App\Repository\UsuarioRepository;
 use App\Utilidades\Utils;
@@ -13,7 +15,13 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class UsuarioController extends AbstractController
 {
-    public function __construct(private ManagerRegistry $doctrine) {}
+
+    private ManagerRegistry $doctrine;
+
+    public function __construct(ManagerRegistry $managerRegistry)
+    {
+        $this-> doctrine = $managerRegistry;
+    }
 
 
     #[Route('/usuario', name: 'app_usuario')]
@@ -30,7 +38,7 @@ class UsuarioController extends AbstractController
     {
         $listUsuarios= $usuarioRepository->findAll();
 
-        $listJson = $utilidades->toJson($listUsuarios);
+        $listJson = $utilidades->toJson($listUsuarios,["user_query"]);
 
         return new JsonResponse($listJson, 200,[],true);
 
@@ -49,7 +57,7 @@ class UsuarioController extends AbstractController
 
         $listUsuarios = $usuarioRepository->findBy($parametrosBusqueda);
 
-        $listJson = $utilidades->toJson($listUsuarios);
+        $listJson = $utilidades->toJson($listUsuarios, null);
 
         return new JsonResponse($listJson, 200,[],true);
 
@@ -57,24 +65,51 @@ class UsuarioController extends AbstractController
 
 
     #[Route('/usuario/save', name: 'app_usuario_crear', methods: ['POST'])]
-    public function save(Request $request): JsonResponse
+    public function save(Request $request, Utils $utils): JsonResponse
     {
+
+        //CARGA DATOS
+        $em = $this-> doctrine->getManager();
+        $userRepository = $em->getRepository(Usuario::class);
+        $rolRepository = $em->getRepository(Rol::class);
+        $apiKeyRepository = $em->getRepository(ApiKey::class);
+
 
         //Obtener Json del body
         $json  = json_decode($request->getContent(), true);
 
+        //Obtenemos los parámetros del JSON
+        $username = $json['username'];
+        $password = $json['password'];
+        $rolname = $json['rol'];
+
         //CREAR NUEVO USUARIO A PARTIR DEL JSON
-        $usuarioNuevo = new Usuario();
-        $usuarioNuevo->setUsername($json['username']);
-        $usuarioNuevo->setPassword($json['password']);
+        if($username != null and $password != null) {
+            $usuarioNuevo = new Usuario();
+            $usuarioNuevo->setUsername($username);
+            $usuarioNuevo->setPassword($utils->hashPassword($password));
 
-        //GUARDAR
-         $em = $this-> doctrine->getManager();
-         $em->persist($usuarioNuevo);
-         $em-> flush();
+            //GESTION DEL ROL
+            if ($rolname == null) {
+                //Obtenemos el rol de usuario por defecto
+                $rolUser = $rolRepository->findOneByIdentificador("USER");
+                $usuarioNuevo->setRol($rolUser);
 
-         return new JsonResponse("{ mensaje: Usuario creado correctamente }", 200, [], true);
+            } else {
+                $rol = $rolRepository->findOneByIdentificador($rolname);
+                $usuarioNuevo->setRol($rol);
+            }
 
+            //GUARDAR
+            $userRepository->save($usuarioNuevo, true);
+
+
+            $utils-> generateApiToken($usuarioNuevo,$apiKeyRepository);
+
+            return new JsonResponse("{ mensaje: Usuario creado correctamente }", 200, [], true);
+        }else{
+            return new JsonResponse("{ mensaje: No ha indicado usario y contraseña }", 101, [], true);
+        }
 
     }
 

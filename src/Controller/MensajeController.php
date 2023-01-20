@@ -7,10 +7,6 @@ use App\Utilidades\Utils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 
 
 class MensajeController extends AbstractController
@@ -29,7 +25,7 @@ class MensajeController extends AbstractController
     {
         $listMensajes = $mensajeRepository->findAll();
 
-        $listJson = $utils->toJson($listMensajes);
+        $listJson = $utils->toJson($listMensajes,null);
 
         return new JsonResponse($listJson, 200, [], true);
 
