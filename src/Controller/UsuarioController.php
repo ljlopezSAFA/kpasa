@@ -2,17 +2,21 @@
 
 namespace App\Controller;
 
+use App\Dto\DtoConverters;
+use App\Dto\UserDto;
 use App\Entity\ApiKey;
 use App\Entity\Rol;
 use App\Entity\Usuario;
 use App\Repository\UsuarioRepository;
 use App\Utilidades\Utils;
 use Doctrine\Persistence\ManagerRegistry;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Util;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-
+use OpenApi\Attributes as OA;
 class UsuarioController extends AbstractController
 {
 
@@ -34,13 +38,21 @@ class UsuarioController extends AbstractController
     }
 
     #[Route('/usuario/list', name: 'app_usuario_listar', methods: ['GET'])]
-    public function listar(UsuarioRepository $usuarioRepository, Utils $utilidades): JsonResponse
+    #[OA\Response(content: new OA\JsonContent(type: "array", items: new OA\Items(ref:new Model(type: UserDto::class))))]
+    public function listar(UsuarioRepository $usuarioRepository, DtoConverters $converters, Utils $utils): JsonResponse
     {
         $listUsuarios= $usuarioRepository->findAll();
 
-        $listJson = $utilidades->toJson($listUsuarios,["user_query"]);
+        $listJson = array();
 
-        return new JsonResponse($listJson, 200,[],true);
+        foreach($listUsuarios as $user){
+            $usarioDto = $converters-> usuarioToDto($user);
+            $json = $utils->toJson($usarioDto,null);
+            $listJson[] = json_decode($json);
+        }
+
+
+        return new JsonResponse($listJson, 200,[],false);
 
     }
 
@@ -60,7 +72,6 @@ class UsuarioController extends AbstractController
         $listJson = $utilidades->toJson($listUsuarios, null);
 
         return new JsonResponse($listJson, 200,[],true);
-
     }
 
 

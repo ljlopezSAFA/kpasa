@@ -7,6 +7,7 @@ use App\Utilidades\Utils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use OpenApi\Attributes as OA;
 
 
 class MensajeController extends AbstractController
@@ -20,7 +21,8 @@ class MensajeController extends AbstractController
         ]);
     }
 
-    #[Route('/mensaje/list', name: 'app_mensaje')]
+    #[Route('/api/mensaje/list', name: 'app_mensaje', methods: ["GET"])]
+    #[OA\Tag(name: 'list_mensajes')]
     public function listar(MensajeRepository $mensajeRepository, Utils $utils): JsonResponse
     {
         $listMensajes = $mensajeRepository->findAll();
@@ -28,7 +30,6 @@ class MensajeController extends AbstractController
         $listJson = $utils->toJson($listMensajes,null);
 
         return new JsonResponse($listJson, 200, [], true);
-
     }
 
 
