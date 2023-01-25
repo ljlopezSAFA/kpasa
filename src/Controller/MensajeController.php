@@ -22,7 +22,7 @@ class MensajeController extends AbstractController
     }
 
     #[Route('/api/mensaje/list', name: 'app_mensaje', methods: ["GET"])]
-    #[OA\Tag(name: 'list_mensajes')]
+    #[OA\Tag(name: 'Mensajes')]
     public function listar(MensajeRepository $mensajeRepository, Utils $utils): JsonResponse
     {
         $listMensajes = $mensajeRepository->findAll();

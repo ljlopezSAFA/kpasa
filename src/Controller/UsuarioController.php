@@ -11,12 +11,12 @@ use App\Repository\UsuarioRepository;
 use App\Utilidades\Utils;
 use Doctrine\Persistence\ManagerRegistry;
 use Nelmio\ApiDocBundle\Annotation\Model;
-use OpenApi\Util;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use OpenApi\Attributes as OA;
+
 class UsuarioController extends AbstractController
 {
 
@@ -37,8 +37,9 @@ class UsuarioController extends AbstractController
         ]);
     }
 
-    #[Route('/usuario/list', name: 'app_usuario_listar', methods: ['GET'])]
-    #[OA\Response(content: new OA\JsonContent(type: "array", items: new OA\Items(ref:new Model(type: UserDto::class))))]
+    #[Route('/api/usuario/list', name: 'app_usuario_listar', methods: ['GET'])]
+    #[OA\Tag(name: 'Usuarios')]
+    #[OA\Response(response:200,description:"successful operation" ,content: new OA\JsonContent(type: "array", items: new OA\Items(ref:new Model(type: UserDto::class))))]
     public function listar(UsuarioRepository $usuarioRepository, DtoConverters $converters, Utils $utils): JsonResponse
     {
         $listUsuarios= $usuarioRepository->findAll();
@@ -56,10 +57,17 @@ class UsuarioController extends AbstractController
 
     }
 
-    #[Route('/usuario/buscar', name: 'app_usuario_buscar', methods: ['GET'])]
+
+
+
+    #[Route('/api/usuario/buscar', name: 'app_usuario_buscar', methods: ['GET'])]
+    #[OA\Tag(name: 'Usuarios')]
+    #[OA\Parameter(name: "nombre", description: "Nombre de usuario", in: "query", required: true, schema: new OA\Schema(type: "string") )]
+    #[OA\Response(response:200,description:"successful operation" ,content: new OA\JsonContent(type: "array", items: new OA\Items(ref:new Model(type: UserDto::class))))]
     public function buscarPorNombre(UsuarioRepository $usuarioRepository,
-                                    Utils $utilidades,
-                                    Request $request): JsonResponse
+                                    Utils $utils,
+                                    Request $request,
+                                    DtoConverters $converters): JsonResponse
     {
         $nombre = $request->query->get("nombre");
 
@@ -69,9 +77,15 @@ class UsuarioController extends AbstractController
 
         $listUsuarios = $usuarioRepository->findBy($parametrosBusqueda);
 
-        $listJson = $utilidades->toJson($listUsuarios, null);
+        $listJson = array();
 
-        return new JsonResponse($listJson, 200,[],true);
+        foreach($listUsuarios as $user){
+            $usarioDto = $converters-> usuarioToDto($user);
+            $json = $utils->toJson($usarioDto,null);
+            $listJson[] = json_decode($json);
+        }
+
+        return new JsonResponse($listJson, 200,[],false);
     }
 
 
