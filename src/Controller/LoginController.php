@@ -2,14 +2,18 @@
 
 namespace App\Controller;
 
+use App\Dto\LoginDto;
 use App\Entity\ApiKey;
+use App\Entity\Rol;
 use App\Entity\Usuario;
 use App\Utilidades\Utils;
 use Doctrine\Persistence\ManagerRegistry;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use OpenApi\Attributes as OA;
 
 class LoginController extends AbstractController
 {
@@ -22,13 +26,17 @@ class LoginController extends AbstractController
     }
 
 
-    #[Route('/login', name: 'app_login', methods: ["POST"])]
+    #[Route('/api/login', name: 'app_login', methods: ["POST"])]
+    #[OA\Tag(name: 'Login')]
+    #[OA\RequestBody(description: "Dto de autentificación", content: new OA\JsonContent(ref: new Model(type: LoginDto::class)))]
     public function login(Request $request, Utils $utils): JsonResponse
     {
+
         //CARGAR REPOSITORIOS
         $em = $this-> doctrine->getManager();
         $userRepository = $em->getRepository(Usuario::class);
         $apikeyRepository = $em->getRepository(ApiKey::class);
+
 
 
         //Cargar datos del cuerpo
@@ -78,5 +86,8 @@ class LoginController extends AbstractController
             ]);
 
         }
+
+
+
     }
 }
