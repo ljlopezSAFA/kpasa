@@ -39,9 +39,9 @@ class Mensaje
         return $this;
     }
 
-    public function getFecha(): ?DateTime
+    public function getFecha(): string
     {
-        return $this->fecha;
+        return $this->fecha->format('Y-m-d H:i:s');;
     }
 
     public function setFecha(DateTime $fecha): self

@@ -13,6 +13,7 @@ use App\Utilidades\Utils;
 use Doctrine\Persistence\ManagerRegistry;
 use JsonMapper;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -42,21 +43,31 @@ class UsuarioController extends AbstractController
 
     #[Route('/api/usuario/list', name: 'app_usuario_listar', methods: ['GET'])]
     #[OA\Tag(name: 'Usuarios')]
+    #[Security(name: "apikey")]
     #[OA\Response(response:200,description:"successful operation" ,content: new OA\JsonContent(type: "array", items: new OA\Items(ref:new Model(type: UserDto::class))))]
-    public function listar(UsuarioRepository $usuarioRepository, DtoConverters $converters, Utils $utils): JsonResponse
+    public function listar(UsuarioRepository $usuarioRepository, DtoConverters $converters, Utils $utils, Request $request): JsonResponse
     {
-        $listUsuarios= $usuarioRepository->findAll();
 
-        $listJson = array();
+        if($utils->comprobarPermisos($request, "USER")){
+            $listUsuarios= $usuarioRepository->findAll();
 
-        foreach($listUsuarios as $user){
-            $usarioDto = $converters-> usuarioToDto($user);
-            $json = $utils->toJson($usarioDto,null);
-            $listJson[] = json_decode($json);
+            $listJson = array();
+
+            foreach($listUsuarios as $user){
+                $usarioDto = $converters-> usuarioToDto($user);
+                $json = $utils->toJson($usarioDto,null);
+                $listJson[] = json_decode($json);
+            }
+
+
+            return new JsonResponse($listJson, 200,[],false);
+        }else{
+            return new JsonResponse("{ message: Unauthorized}", 401,[],false);
+
         }
 
 
-        return new JsonResponse($listJson, 200,[],false);
+
 
     }
 

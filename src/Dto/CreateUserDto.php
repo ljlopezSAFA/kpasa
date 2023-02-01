@@ -6,6 +6,8 @@ class CreateUserDto
 {
 
 
+    private string $id ;
+
     private string $username ;
 
     private string $password ;
